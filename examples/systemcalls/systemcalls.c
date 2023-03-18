@@ -1,5 +1,11 @@
 #include "systemcalls.h"
-
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 /**
  * @param cmd the command to execute with system()
  * @return true if the command in @param cmd was executed
@@ -16,6 +22,18 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
+    int ret_code;
+
+    if( cmd == NULL)         //check if cmd was provided
+	return false;
+
+    ret_code=system(cmd);     
+    
+    if(ret_code != 0)        //check if cmd executed successfully    
+    {
+	return false;
+    }
+	
 
     return true;
 }
@@ -40,6 +58,7 @@ bool do_exec(int count, ...)
     va_start(args, count);
     char * command[count+1];
     int i;
+
     for(i=0; i<count; i++)
     {
         command[i] = va_arg(args, char *);
@@ -47,7 +66,9 @@ bool do_exec(int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    //command[count] = command[count];
+    va_end(args);
+	
 
 /*
  * TODO:
@@ -58,8 +79,24 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    pid_t pid;
+    int status;
 
-    va_end(args);
+    pid = fork();
+    if (pid == -1)     //check if fork was a success
+        return false;
+
+    if (pid == 0) {    //child process
+	if (execv(command[0], command) == -1)
+	    exit(EXIT_FAILURE);
+    } else {           //parent process
+	    
+	if (waitpid(pid, &status, 0) == -1)  //wait failed
+	    return false;
+	
+	if (WEXITSTATUS(status) != 0)        //command exited with a failure
+	    return false;
+    }
 
     return true;
 }
@@ -75,6 +112,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     va_start(args, count);
     char * command[count+1];
     int i;
+
     for(i=0; i<count; i++)
     {
         command[i] = va_arg(args, char *);
@@ -82,8 +120,8 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
-
+    //command[count] = command[count];
+    va_end(args);
 
 /*
  * TODO
@@ -92,8 +130,42 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
-
+    pid_t pid;
+    int status;
+    int fd;
+    
     va_end(args);
+    
+    // create a file with 644 permission
+    fd = open(outputfile, (O_WRONLY|O_TRUNC|O_CREAT),0644);
+    
+    if (fd < 0) //check if file was created
+	return false;
+
+    pid = fork();
+    if (pid == -1) {   //check if fork was a success
+	close(fd);
+
+	return false;
+    }
+
+    if (pid == 0) {    //child process
+	dup2(fd, 1);
+	close(fd);
+	if (execv(command[0], command) == -1)
+		    exit(EXIT_FAILURE);
+    } else {           //parent process
+
+	close(fd);     //close file
+        
+	if (waitpid(pid, &status, 0) == -1) //wait failed
+	    return false;
+	
+	if (WEXITSTATUS(status) != 0)       //command exited with a failure 
+	    return false;
+    }
 
     return true;
 }
+
+
