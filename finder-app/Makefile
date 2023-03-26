@@ -1,11 +1,14 @@
-C=gcc
-all:
-	rm -rf *.o writer
-	aarch64-none-linux-gnu-gcc writer.c -o writer
+CC=$(CROSS_COMPILE)gcc
 
-writer:
-	$(CROSS_COMPILE)$(C) writer.c -o writer
-	
-clean:
-	rm -rf *.o writer
+override CFLAGS+=-Wall
 
+all: writer
+
+writer : writer.o
+		$(CC) -o writer writer.o
+
+writer.o : writer.c
+		$(CC) $(CFLAGS) -c writer.c
+
+clean : 
+		-rm writer writer.o
