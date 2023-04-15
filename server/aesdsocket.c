@@ -13,7 +13,7 @@
 
 #define BUFFER_SIZE 1024
 #define SOCKET_FILE "/var/tmp/aesdsocketdata"
-
+#define PORT 9000
 
 char *read_file(const char *filename);
 int sockfd;
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(9000);
+    server_addr.sin_port = htons(PORT);
 
     if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    syslog(LOG_INFO, "Socket server running on port 9000");
+    syslog(LOG_INFO, "Socket server running on port %i", PORT);
 
     while (1)
     {
