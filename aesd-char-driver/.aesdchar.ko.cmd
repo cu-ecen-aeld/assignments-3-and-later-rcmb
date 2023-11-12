@@ -1,0 +1,1 @@
+cmd_/home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesdchar.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesdchar.ko /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesdchar.o /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesdchar.mod.o;  true

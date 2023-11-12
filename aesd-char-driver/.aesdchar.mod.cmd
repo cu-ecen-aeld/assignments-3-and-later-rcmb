@@ -1,0 +1,1 @@
+cmd_/home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesdchar.mod := printf '%s\n'   aesd-circular-buffer.o main.o | awk '!x[$$0]++ { print("/home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/"$$0) }' > /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesdchar.mod

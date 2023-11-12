@@ -1,0 +1,1 @@
+cmd_/home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/Module.symvers :=  scripts/mod/modpost -m -a     -o /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/Module.symvers -T /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/modules.order -i Module.symvers -e 
