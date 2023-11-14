@@ -300,9 +300,6 @@ void *threadHandler(void *threadParam)
     //write to file with lock
     pthread_mutex_lock(&mutexLock);
     FILE *fileFD = fopen(dataFile,"a+");
-    //fseek(fileFD, 0L, SEEK_END);
-    //int current_file_length = ftell(fileFD);
-    //printf("file pos is %i\n",current_file_length);
 
     //Write buffer to file
     fwrite(outputBuffer,1, strlen(outputBuffer),fileFD);
@@ -312,8 +309,6 @@ void *threadHandler(void *threadParam)
     //Go to the start of the file and read  entire contents
     //fread is used to ensure that new lines are read too
     
-    //rewind(fileFD);
-    //fseek(fileFD, current_file_length,SEEK_SET);
     fclose(fileFD);
     fileFD = fopen(dataFile,"rb");
       
