@@ -13,11 +13,13 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <sys/time.h>
-#include "queue.h"  //Queue utility methods
+#include "queue.h"      //Queue utility methods
+#include "aesd_ioctl.h" 
 
 // Define constants
 #define MAX_BACKLOG 10
 #define BUFFER_SIZE 100
+const char *ioctl_string = "AESDCHAR_IOCSEEKTO:";
 
 // Declare global variables
 char *port = "9000";
@@ -297,35 +299,39 @@ void *threadHandler(void *threadParam)
         memset(buffer, 0, BUFFER_SIZE);
     }
 
-    //write to file with lock
+    //start lock
     pthread_mutex_lock(&mutexLock);
     FILE *fileFD = fopen(dataFile,"a+");
 
-    //Write buffer to file
-    fwrite(outputBuffer,1, strlen(outputBuffer),fileFD);
-    ////sendBuffer = (char *)malloc(sizeof(char) * (data_count + 1));
-    ////memset(sendBuffer, 0, data_count + 1);
+    //Check if we have got a IOCSEEKTO
+    if (strncmp(outputBuffer, ioctl_string, strlen(ioctl_string)) == 0)
+    {
+        //IOCTL call with params
+        struct aesd_seekto seek_params;
+        sscanf(outputBuffer, "AESDCHAR_IOCSEEKTO:%d,%d", &seek_params.write_cmd, &seek_params.write_cmd_offset);
+        
+        //Get the file number to call IOCTL
+        int file_number = fileno(fileFD);
+        ioctl(file_number, AESDCHAR_IOCSEEKTO, &seek_params);
 
-    //Go to the start of the file and read  entire contents
-    //fread is used to ensure that new lines are read too
-    
-    fclose(fileFD);
-    fileFD = fopen(dataFile,"rb");
-      
-    //fread(sendBuffer, data_count + 1,1,fileFD);
-    //fgets(sendBuffer,data_count+1,fileFD);
-    //Send the file contents to the client
+    } else { //regular
 
-    char read_line[BUFFER_SIZE];
-    memset(read_line, 0, BUFFER_SIZE);
-    
-    while (fgets(read_line, BUFFER_SIZE, fileFD) != NULL) {
-       send(params->threadFD, read_line, strlen(read_line), 0);
-       memset(read_line, 0, BUFFER_SIZE);
+	    //Write buffer to file
+	    fwrite(outputBuffer,1, strlen(outputBuffer),fileFD);
+            //The specs mention not to close the file, we'll rewind to send the entire contents back
+	    rewind(fileFD);
     }
 
-    ///send(params->threadFD,sendBuffer,strlen(outputBuffer),0);
- 
+    //send back the contents of the file
+    int bytes_read=0;
+    sendBuffer = (char *)malloc(sizeof(char) * (1));
+
+    //may not be very efficient but works good for our data sizes
+    while((bytes_read = fread(sendBuffer, 1, 1, fileFD)) > 0)
+    {
+      send(params->threadFD, sendBuffer, bytes_read, 0);
+    }
+
     //Close 
     fclose(fileFD);
     params->isDone = true;

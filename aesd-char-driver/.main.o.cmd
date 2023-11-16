@@ -1007,6 +1007,7 @@ deps_/home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/main.o := \
   include/linux/nfs_fs_i.h \
   /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesdchar.h \
   /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesd-circular-buffer.h \
+  /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/aesd_ioctl.h \
 
 /home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/main.o: $(deps_/home/rajesh/assignments-3-and-later-rcmb/aesd-char-driver/main.o)
 
